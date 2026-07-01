@@ -75,9 +75,21 @@ def process_live_packet(packet):
             elif packet.haslayer("ICMP"):
                 protocol = "ICMP"
                 info = "ICMP Echo/Reply"
+            else:
+                protocol = f"IP/{packet[IP].proto}"
+                info = packet.summary()
         else:
-            # Skip non-IP packets to reduce noise
-            return None
+            protocol = packet.name if hasattr(packet, 'name') else "Unknown Layer 2"
+            if packet.haslayer('Ether'):
+                src = packet['Ether'].src
+                dst = packet['Ether'].dst
+            elif hasattr(packet, 'src') and hasattr(packet, 'dst'):
+                src = packet.src
+                dst = packet.dst
+            else:
+                src = "N/A"
+                dst = "N/A"
+            info = packet.summary()
 
         # Convert hex representation
         hex_data = bytes(packet)[:16].hex(' ') if hasattr(bytes, 'hex') else "N/A"
